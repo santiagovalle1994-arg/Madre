@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTC — Medicina Tradicional China</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:    #f5f0e8;
+      --warm:     #ede5d4;
+      --terra:    #c4714a;
+      --terra-dk: #9e5535;
+      --sage:     #6b7f62;
+      --sage-lt:  #8fa384;
+      --ink:      #2a2218;
+      --ink-soft: #4a3f30;
+      --gold:     #b89a5e;
+      --gold-lt:  #d4b87a;
+      --white:    #fdfaf5;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    /* ─── CURSOR ─────────────────────────── */
+    .cursor {
+      width: 10px; height: 10px;
+      background: var(--terra);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: transform .15s ease, width .3s ease, height .3s ease, background .3s;
+      mix-blend-mode: multiply;
+    }
+    .cursor.hovered { width: 36px; height: 36px; background: var(--gold-lt); opacity: .6; }
+
+    /* ─── NAV ────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 4rem;
+      transition: background .4s, backdrop-filter .4s, box-shadow .4s;
+    }
+    nav.scrolled {
+      background: rgba(245,240,232,.88);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 1px 0 rgba(180,154,94,.2);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem; font-weight: 500; letter-spacing: .08em;
+      color: var(--ink); text-decoration: none;
+    }
+    .nav-logo span { color: var(--terra); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: .8rem; font-weight: 400; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--ink-soft); text-decoration: none;
+      position: relative; padding-bottom: 2px;
+      transition: color .3s;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 1px; background: var(--terra);
+      transition: width .3s;
+    }
+    .nav-links a:hover { color: var(--terra); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      font-size: .75rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+      padding: .6rem 1.5rem; border: 1px solid var(--terra);
+      color: var(--terra); text-decoration: none;
+      transition: background .3s, color .3s;
+    }
+    .nav-cta:hover { background: var(--terra); color: var(--white); }
+
+    /* ─── HERO ───────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      position: relative; overflow: hidden;
+    }
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 8rem 4rem 6rem 6rem;
+      position: relative; z-index: 2;
+    }
+    .hero-tag {
+      font-size: .7rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--terra); margin-bottom: 2rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .hero-tag::before {
+      content: ''; display: inline-block;
+      width: 32px; height: 1px; background: var(--terra);
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 5vw, 4.2rem);
+      font-weight: 300; line-height: 1.18;
+      color: var(--ink); margin-bottom: 1.5rem;
+    }
+    .hero h1 em { font-style: italic; color: var(--terra); }
+    .hero-sub {
+      font-size: 1rem; font-weight: 300; line-height: 1.75;
+      color: var(--ink-soft); max-width: 420px; margin-bottom: 3rem;
+    }
+    .hero-ctas { display: flex; flex-direction: column; gap: 1rem; align-items: flex-start; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: .75rem;
+      background: var(--terra); color: var(--white);
+      padding: .9rem 2rem; text-decoration: none;
+      font-size: .8rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+      transition: background .3s, transform .2s;
+    }
+    .btn-primary:hover { background: var(--terra-dk); transform: translateX(4px); }
+    .btn-primary svg { transition: transform .3s; }
+    .btn-primary:hover svg { transform: translateX(4px); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: .5rem;
+      color: var(--ink-soft); text-decoration: none;
+      font-size: .8rem; font-weight: 400; letter-spacing: .1em; text-transform: uppercase;
+      border-bottom: 1px solid transparent;
+      transition: border-color .3s, color .3s;
+    }
+    .btn-secondary:hover { color: var(--terra); border-color: var(--terra); }
+
+    .hero-right {
+      position: relative; overflow: hidden;
+    }
+    .hero-img-wrap {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--warm) 0%, #d9c9a8 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-ornament {
+      width: 320px; height: 320px; position: relative;
+    }
+    .hero-ornament svg { width: 100%; height: 100%; opacity: .18; }
+    .hero-photo-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; color: var(--ink-soft);
+    }
+    .hero-photo-placeholder .ph-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 2px dashed var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold);
+    }
+    .hero-photo-placeholder p {
+      font-size: .75rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--gold); opacity: .7;
+    }
+    .hero-scroll {
+      position: absolute; bottom: 2.5rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: .5rem;
+      color: var(--ink-soft); font-size: .65rem; letter-spacing: .15em; text-transform: uppercase;
+      z-index: 10; cursor: pointer;
+    }
+    .scroll-line {
+      width: 1px; height: 48px; background: var(--terra); opacity: .5;
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: .3; transform: scaleY(1); }
+      50% { opacity: .8; transform: scaleY(1.2); }
+    }
+    .hero-deco {
+      position: absolute; top: 50%; left: 0;
+      transform: translateY(-50%) translateX(-30%);
+      width: 320px; height: 320px; border-radius: 50%;
+      border: 1px solid var(--gold); opacity: .12;
+      pointer-events: none; z-index: 0;
+    }
+    .hero-deco-2 {
+      position: absolute; bottom: 10%; right: 48%;
+      width: 180px; height: 180px; border-radius: 50%;
+      border: 1px solid var(--terra); opacity: .1;
+      pointer-events: none;
+    }
+
+    /* ─── INTRO BAND ─────────────────────── */
+    .intro-band {
+      background: var(--ink); color: var(--cream);
+      padding: 5rem 6rem;
+      display: grid; grid-template-columns: 1fr 2fr; gap: 4rem;
+      align-items: center;
+    }
+    .intro-band .band-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.5rem; font-weight: 300; line-height: 1.1;
+      color: var(--gold-lt);
+    }
+    .intro-band p {
+      font-size: 1rem; font-weight: 300; line-height: 1.9;
+      color: rgba(245,240,232,.75);
+    }
+    .intro-band p strong { color: var(--gold-lt); font-weight: 400; }
+
+    /* ─── STATS ──────────────────────────── */
+    .stats {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      border-top: 1px solid rgba(180,154,94,.2);
+    }
+    .stat {
+      padding: 3rem 4rem; border-right: 1px solid rgba(180,154,94,.2);
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .stat.visible { opacity: 1; transform: translateY(0); }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem; font-weight: 300;
+      color: var(--terra); line-height: 1;
+      margin-bottom: .5rem;
+    }
+    .stat-label {
+      font-size: .75rem; font-weight: 400; letter-spacing: .1em;
+      text-transform: uppercase; color: rgba(245,240,232,.5);
+    }
+
+    /* ─── SECTION SHARED ─────────────────── */
+    section { padding: 7rem 6rem; }
+    .section-label {
+      font-size: .68rem; font-weight: 500; letter-spacing: .25em; text-transform: uppercase;
+      color: var(--terra); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .section-label::after {
+      content: ''; flex: 1; max-width: 48px; height: 1px; background: var(--terra);
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 300; line-height: 1.2;
+      color: var(--ink); margin-bottom: 1.5rem;
+    }
+    .section-title em { font-style: italic; color: var(--terra); }
+    .section-intro {
+      font-size: .95rem; font-weight: 300; line-height: 1.85;
+      color: var(--ink-soft); max-width: 520px;
+    }
+
+    /* reveal */
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+
+    /* ─── TERAPIAS ────────────────────────── */
+    #terapias { background: var(--white); }
+    .terapias-header {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      margin-bottom: 5rem; align-items: end;
+    }
+    .terapias-grid {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 2px;
+    }
+    .terapia-card {
+      background: var(--cream); padding: 2.5rem 2rem;
+      position: relative; overflow: hidden;
+      cursor: default;
+      transition: transform .4s ease;
+    }
+    .terapia-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--terra); transform: scaleY(0);
+      transform-origin: bottom; transition: transform .5s cubic-bezier(.77,0,.18,1);
+      z-index: 0;
+    }
+    .terapia-card:hover::before { transform: scaleY(1); }
+    .terapia-card:hover { transform: translateY(-4px); }
+    .terapia-card:hover .card-num,
+    .terapia-card:hover .card-title,
+    .terapia-card:hover .card-def,
+    .terapia-card:hover .card-body,
+    .terapia-card:hover .card-section-label { color: var(--white); }
+    .terapia-card:hover .card-divider { background: rgba(255,255,255,.3); }
+    .terapia-card > * { position: relative; z-index: 1; }
+    .card-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.5rem; font-weight: 300;
+      color: rgba(42,34,24,.08); line-height: 1;
+      margin-bottom: 1.5rem;
+      transition: color .4s;
+    }
+    .terapia-card:hover .card-num { color: rgba(255,255,255,.15); }
+    .card-icon {
+      font-size: 1.6rem; margin-bottom: 1.2rem; display: block;
+    }
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 500;
+      color: var(--ink); margin-bottom: .4rem;
+      transition: color .4s;
+    }
+    .card-def {
+      font-size: .8rem; font-weight: 300; font-style: italic;
+      color: var(--ink-soft); margin-bottom: 1.2rem;
+      transition: color .4s;
+    }
+    .card-divider {
+      width: 32px; height: 1px; background: var(--terra);
+      margin-bottom: 1.2rem; transition: background .4s;
+    }
+    .card-section-label {
+      font-size: .65rem; font-weight: 500; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--terra); margin-bottom: .5rem; margin-top: 1rem;
+      transition: color .4s;
+    }
+    .card-body {
+      font-size: .82rem; font-weight: 300; line-height: 1.75;
+      color: var(--ink-soft); transition: color .4s;
+    }
+    .extras-row {
+      margin-top: 2px;
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 2px;
+    }
+    .extra-card {
+      background: var(--warm); padding: 2rem;
+      display: flex; align-items: flex-start; gap: 1rem;
+    }
+    .extra-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: .1rem; }
+    .extra-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 500; color: var(--ink);
+      margin-bottom: .3rem;
+    }
+    .extra-desc {
+      font-size: .78rem; font-weight: 300; line-height: 1.7; color: var(--ink-soft);
+    }
+
+    /* ─── SOBRE MÍ ───────────────────────── */
+    #sobre-mi {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6rem;
+      align-items: center;
+    }
+    .sobre-img {
+      position: relative;
+    }
+    .sobre-img-frame {
+      width: 100%; padding-bottom: 120%;
+      background: linear-gradient(135deg, var(--warm) 0%, #cdbfa0 100%);
+      position: relative; overflow: hidden;
+    }
+    .sobre-img-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; color: var(--gold);
+    }
+    .sobre-img-placeholder svg { opacity: .4; }
+    .sobre-img-placeholder p {
+      font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; opacity: .6;
+    }
+    .sobre-accent {
+      position: absolute; bottom: -1.5rem; right: -1.5rem;
+      width: 120px; height: 120px;
+      border: 1px solid var(--gold); opacity: .4;
+    }
+    .sobre-accent-2 {
+      position: absolute; top: -1rem; left: -1rem;
+      width: 60px; height: 60px;
+      background: var(--terra); opacity: .15;
+    }
+    .sobre-content {}
+    .sobre-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 300; font-style: italic;
+      line-height: 1.5; color: var(--terra);
+      border-left: 2px solid var(--terra); padding-left: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .sobre-text {
+      font-size: .9rem; font-weight: 300; line-height: 1.9;
+      color: var(--ink-soft); margin-bottom: 1rem;
+    }
+    .sobre-text strong { color: var(--ink); font-weight: 400; }
+    .sobre-list {
+      list-style: none; margin: 1.5rem 0 2rem;
+      display: flex; flex-direction: column; gap: .75rem;
+    }
+    .sobre-list li {
+      display: flex; align-items: flex-start; gap: .75rem;
+      font-size: .85rem; font-weight: 300; color: var(--ink-soft); line-height: 1.5;
+    }
+    .sobre-list li::before {
+      content: '—'; color: var(--terra); flex-shrink: 0; font-weight: 400;
+    }
+
+    /* ─── PROCESO ────────────────────────── */
+    #proceso { background: var(--ink); color: var(--cream); }
+    #proceso .section-title { color: var(--gold-lt); }
+    #proceso .section-intro { color: rgba(245,240,232,.6); }
+    .proceso-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 0;
+      margin-top: 4rem; border-top: 1px solid rgba(180,154,94,.2);
+    }
+    .proceso-step {
+      padding: 2.5rem 2rem 2.5rem 0;
+      border-right: 1px solid rgba(180,154,94,.15);
+      padding-right: 2rem; padding-left: 0;
+    }
+    .proceso-step:first-child { padding-left: 0; }
+    .proceso-step:last-child { border-right: none; padding-right: 0; }
+    .proceso-step + .proceso-step { padding-left: 2rem; }
+    .paso-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .8rem; font-weight: 300;
+      color: var(--terra); letter-spacing: .15em; margin-bottom: 1.5rem;
+    }
+    .paso-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; font-weight: 400;
+      color: var(--gold-lt); margin-bottom: .75rem;
+    }
+    .paso-desc {
+      font-size: .8rem; font-weight: 300; line-height: 1.8;
+      color: rgba(245,240,232,.55);
+    }
+
+    /* ─── CONTACTO ───────────────────────── */
+    #contacto {
+      background: var(--white);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6rem;
+      align-items: start;
+    }
+    .contacto-left {}
+    .contacto-info { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .contacto-item {
+      display: flex; align-items: flex-start; gap: 1rem;
+      font-size: .85rem; font-weight: 300; color: var(--ink-soft); line-height: 1.6;
+    }
+    .contacto-item-icon {
+      width: 36px; height: 36px; border: 1px solid rgba(180,154,94,.3);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--terra); font-size: .85rem;
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block; font-size: .68rem; font-weight: 500; letter-spacing: .15em;
+      text-transform: uppercase; color: var(--terra); margin-bottom: .5rem;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: .85rem 1rem;
+      border: 1px solid rgba(42,34,24,.15); background: var(--cream);
+      font-family: 'Jost', sans-serif; font-size: .88rem; font-weight: 300;
+      color: var(--ink); outline: none;
+      transition: border-color .3s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--terra);
+    }
+    .form-group textarea { height: 120px; resize: vertical; }
+    .form-group select { appearance: none; cursor: pointer; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* ─── FOOTER ─────────────────────────── */
+    footer {
+      background: var(--ink); color: rgba(245,240,232,.5);
+      padding: 3rem 6rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 400; letter-spacing: .06em;
+      color: var(--cream);
+    }
+    .footer-logo span { color: var(--terra); }
+    .footer-text { font-size: .72rem; letter-spacing: .08em; }
+    .footer-social { display: flex; gap: 1.25rem; }
+    .footer-social a {
+      width: 32px; height: 32px; border: 1px solid rgba(245,240,232,.15);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(245,240,232,.5); text-decoration: none; font-size: .8rem;
+      transition: border-color .3s, color .3s;
+    }
+    .footer-social a:hover { border-color: var(--terra); color: var(--terra); }
+
+    /* ─── SUCCESS ────────────────────────── */
+    .form-success {
+      display: none; text-align: center; padding: 3rem 2rem;
+    }
+    .form-success .success-icon {
+      font-size: 2.5rem; margin-bottom: 1rem;
+    }
+    .form-success h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; color: var(--sage); margin-bottom: .5rem;
+    }
+    .form-success p { font-size: .85rem; color: var(--ink-soft); line-height: 1.7; }
+
+    /* ─── MOBILE ─────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-left { padding: 7rem 1.5rem 4rem; }
+      .hero-right { display: none; }
+      .intro-band { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 1.5rem; }
+      .stats { grid-template-columns: 1fr; }
+      .stat { border-right: none; border-bottom: 1px solid rgba(180,154,94,.2); padding: 2rem 1.5rem; }
+      section { padding: 4rem 1.5rem; }
+      .terapias-header { grid-template-columns: 1fr; gap: 2rem; margin-bottom: 2.5rem; }
+      .terapias-grid { grid-template-columns: 1fr; }
+      .extras-row { grid-template-columns: 1fr; }
+      #sobre-mi { grid-template-columns: 1fr; gap: 3rem; }
+      .sobre-img-frame { padding-bottom: 70%; }
+      .proceso-grid { grid-template-columns: 1fr 1fr; }
+      .proceso-step { padding: 2rem 1.5rem 2rem 0; }
+      .proceso-step + .proceso-step { padding-left: 1.5rem; }
+      #contacto { grid-template-columns: 1fr; gap: 3rem; }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; padding: 2.5rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CURSOR -->
+  <div class="cursor" id="cursor"></div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a class="nav-logo" href="#"><span>✦</span> MTC Terapias</a>
+    <ul class="nav-links">
+      <li><a href="#terapias">Terapias</a></li>
+      <li><a href="#sobre-mi">Sobre mí</a></li>
+      <li><a href="#proceso">Cómo funciona</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <a class="nav-cta" href="#contacto">Reservar consulta</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="inicio">
+    <div class="hero-deco"></div>
+    <div class="hero-deco-2"></div>
+    <div class="hero-left">
+      <p class="hero-tag">Medicina Tradicional China</p>
+      <h1>Tu cuerpo sabe<br>cómo <em>sanar.</em><br>Yo te acompaño<br>en ese camino.</h1>
+      <p class="hero-sub">Terapias de Medicina Tradicional China para aliviar el dolor, recuperar la energía y volver a sentirte bien — de adentro hacia afuera.</p>
+      <div class="hero-ctas">
+        <a href="#contacto" class="btn-primary">
+          Reservar mi primera consulta
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="#terapias" class="btn-secondary">Conocé las terapias →</a>
+        <a href="#sobre-mi" class="btn-secondary">¿Nunca probaste la MTC? Empezá por acá →</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-img-wrap">
+        <div class="hero-ornament">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="var(--terra)" d="M44.7,-76.4C58.3,-69.7,70.1,-59.1,77.7,-45.8C85.3,-32.5,88.7,-16.3,87.4,-0.7C86.1,14.8,80.1,29.6,72,43.2C63.9,56.8,53.7,69.2,40.7,76.5C27.7,83.8,13.9,86,0.1,85.8C-13.7,85.6,-27.4,83,-39.7,76.1C-52,69.2,-62.9,58,-71.7,44.6C-80.5,31.2,-87.2,15.6,-86.8,0.2C-86.4,-15.2,-78.9,-30.3,-70.2,-43.7C-61.5,-57.1,-51.6,-68.7,-39.2,-76C-26.8,-83.3,-13.4,-86.3,0.9,-87.8C15.2,-89.3,31.1,-83.1,44.7,-76.4Z" transform="translate(100 100)"/>
+          </svg>
+        </div>
+        <div class="hero-photo-placeholder">
+          <div class="ph-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+          </div>
+          <p>Tu foto aquí</p>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll" onclick="document.getElementById('intro-band').scrollIntoView({behavior:'smooth'})">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- INTRO BAND -->
+  <div class="intro-band reveal" id="intro-band">
+    <div class="band-label">2.500<br>años de<br>sabiduría</div>
+    <p>
+      ¿Llevás semanas con ese dolor que no cede? ¿El estrés ya se instaló en tu cuerpo y no sabés cómo sacarlo?<br><br>
+      A veces el cuerpo habla antes que las palabras. Lo hace a través del cansancio, el insomnio, la tensión o el malestar que se vuelve costumbre.<br><br>
+      La <strong>Medicina Tradicional China</strong> lleva más de 2.500 años ayudando a las personas a recuperar el equilibrio que el ritmo de vida moderno les quita. No se trata de magia ni de creencias: se trata de un sistema de salud completo, con diagnóstico personalizado y técnicas probadas que trabajan <strong>junto a tu cuerpo</strong>, no en contra de él.
+    </p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats" style="background:var(--ink)">
+    <div class="stat reveal">
+      <div class="stat-num">2.500+</div>
+      <div class="stat-label">Años de historia clínica</div>
+    </div>
+    <div class="stat reveal reveal-delay-1">
+      <div class="stat-num">[X]+</div>
+      <div class="stat-label">Años de experiencia</div>
+    </div>
+    <div class="stat reveal reveal-delay-2">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Técnicas especializadas</div>
+    </div>
+  </div>
+
+  <!-- TERAPIAS -->
+  <section id="terapias">
+    <div class="terapias-header">
+      <div class="reveal">
+        <div class="section-label">Mis terapias</div>
+        <h2 class="section-title">Técnicas que <em>escuchan</em><br>tu cuerpo</h2>
+      </div>
+      <p class="section-intro reveal reveal-delay-1">
+        Cada sesión es un espacio tuyo. Sin apuro. Con escucha real. Trabajo con técnicas milenarias adaptadas a tus necesidades específicas, porque no existen dos personas iguales.
+      </p>
+    </div>
+
+    <div class="terapias-grid">
+
+      <!-- Acupuntura -->
+      <div class="terapia-card reveal">
+        <div class="card-num">01</div>
+        <span class="card-icon">🪡</span>
+        <div class="card-title">Acupuntura</div>
+        <div class="card-def">El arte de despertar la capacidad natural de tu cuerpo para sanar.</div>
+        <div class="card-divider"></div>
+        <div class="card-section-label">¿Cómo te ayuda?</div>
+        <div class="card-body">Alivia el dolor crónico de espalda, cuello y articulaciones. Reduce el estrés, la ansiedad y mejora el sueño. Acompaña problemas digestivos y refuerza el sistema inmune.</div>
+        <div class="card-section-label">¿Qué vas a sentir?</div>
+        <div class="card-body">Las agujas son extremadamente finas. La mayoría siente una leve presión seguida de una profunda relajación. Muchos pacientes se quedan dormidos durante la sesión.</div>
+      </div>
+
+      <!-- Moxibustión -->
+      <div class="terapia-card reveal reveal-delay-1">
+        <div class="card-num">02</div>
+        <span class="card-icon">🌿</span>
+        <div class="card-title">Moxibustión</div>
+        <div class="card-def">Calor terapéutico que penetra profundo, donde el cuerpo más lo necesita.</div>
+        <div class="card-divider"></div>
+        <div class="card-section-label">¿Cómo te ayuda?</div>
+        <div class="card-body">Ideal para dolores que empeoran con el frío, contracturas crónicas, fatiga profunda, problemas menstruales y para fortalecer las defensas del organismo.</div>
+        <div class="card-section-label">¿Qué vas a sentir?</div>
+        <div class="card-body">Una sensación de calor agradable que se expande lentamente. No quema ni duele. Muchas personas lo describen como "ese calorcito que te relaja todo".</div>
+      </div>
+
+      <!-- Tuina -->
+      <div class="terapia-card reveal reveal-delay-2">
+        <div class="card-num">03</div>
+        <span class="card-icon">🤲</span>
+        <div class="card-title">Masaje Tuina</div>
+        <div class="card-def">Masaje terapéutico chino: más que relajación, una herramienta de recuperación.</div>
+        <div class="card-divider"></div>
+        <div class="card-section-label">¿Cómo te ayuda?</div>
+        <div class="card-body">Muy efectivo para contracturas musculares, dolor de espalda, cervicales y hombros, estrés crónico instalado en el cuerpo y para mejorar la circulación y movilidad articular.</div>
+        <div class="card-section-label">¿Qué vas a sentir?</div>
+        <div class="card-body">Una combinación de alivio inmediato y liberación progresiva. Al terminar, la mayoría siente el cuerpo más liviano y la mente más clara.</div>
+      </div>
+
+    </div>
+
+    <!-- Técnicas complementarias -->
+    <div class="extras-row">
+      <div class="extra-card reveal">
+        <div class="extra-icon">🫧</div>
+        <div>
+          <div class="extra-title">Ventosas</div>
+          <div class="extra-desc">Técnica de succión que mejora la circulación, libera tensiones musculares profundas y activa el sistema linfático. Ideal como complemento de la acupuntura o el Tuina.</div>
+        </div>
+      </div>
+      <div class="extra-card reveal reveal-delay-1">
+        <div class="extra-icon">👂</div>
+        <div>
+          <div class="extra-title">Auriculoterapia</div>
+          <div class="extra-desc">Estimulación de puntos específicos en la oreja que corresponden a diferentes órganos y sistemas. Útil para el manejo del dolor, ansiedad, adicciones y trastornos del sueño.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOBRE MÍ -->
+  <section id="sobre-mi">
+    <div class="sobre-img reveal">
+      <div class="sobre-img-frame">
+        <div class="sobre-img-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <p>Tu foto aquí</p>
+        </div>
+      </div>
+      <div class="sobre-accent"></div>
+      <div class="sobre-accent-2"></div>
+    </div>
+
+    <div class="sobre-content">
+      <div class="section-label reveal">Sobre mí</div>
+      <h2 class="section-title reveal reveal-delay-1">Una mirada <em>integral</em><br>sobre tu salud</h2>
+
+      <blockquote class="sobre-quote reveal reveal-delay-2">
+        "El verdadero médico trata la raíz,<br>no sólo las ramas."
+      </blockquote>
+
+      <p class="sobre-text reveal reveal-delay-2">
+        Hola, soy <strong>[Nombre]</strong>. Llevo <strong>[X años]</strong> acompañando a personas que llegaron a mi consultorio cargando dolor, agotamiento o esa sensación de que algo no está bien — aunque los análisis digan que todo es normal.
+      </p>
+      <p class="sobre-text reveal reveal-delay-2">
+        Mi formación en Medicina Tradicional China me enseñó algo que muchas veces no tiene tiempo de hacer: <strong>escuchar</strong>. Escuchar el cuerpo, la historia de vida, los hábitos, las emociones. Porque todo eso forma parte del diagnóstico.
+      </p>
+
+      <ul class="sobre-list reveal reveal-delay-3">
+        <li>Diagnóstico personalizado, no protocolos genéricos</li>
+        <li>Acompañamiento continuo a lo largo del proceso</li>
+        <li>Escucha activa y espacio para que puedas hablar</li>
+        <li>Integración de técnicas según tu necesidad específica</li>
+      </ul>
+
+      <a href="#contacto" class="btn-primary reveal reveal-delay-4" style="display:inline-flex">
+        Agendá tu primera consulta
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- PROCESO -->
+  <section id="proceso">
+    <div class="reveal">
+      <div class="section-label" style="color:var(--terra)">Cómo funciona</div>
+      <h2 class="section-title">Tu camino hacia<br>el <em>bienestar</em></h2>
+    </div>
+    <div class="proceso-grid">
+      <div class="proceso-step reveal">
+        <div class="paso-num">Paso 01</div>
+        <div class="paso-title">Primera consulta</div>
+        <div class="paso-desc">Conversamos sobre tu historial de salud, tus síntomas y tu estilo de vida. Es un espacio sin apuro donde podés contar todo lo que sentís.</div>
+      </div>
+      <div class="proceso-step reveal reveal-delay-1">
+        <div class="paso-num">Paso 02</div>
+        <div class="paso-title">Diagnóstico integral</div>
+        <div class="paso-desc">Evalúo tu caso desde la visión de la MTC: observación, palpación y análisis de los meridianos para encontrar el origen del desequilibrio.</div>
+      </div>
+      <div class="proceso-step reveal reveal-delay-2">
+        <div class="paso-num">Paso 03</div>
+        <div class="paso-title">Plan de tratamiento</div>
+        <div class="paso-desc">Diseño un protocolo personalizado eligiendo las técnicas más adecuadas para tu caso: acupuntura, moxa, Tuina o su combinación.</div>
+      </div>
+      <div class="proceso-step reveal reveal-delay-3">
+        <div class="paso-num">Paso 04</div>
+        <div class="paso-title">Seguimiento</div>
+        <div class="paso-desc">Monitoreo tu evolución en cada sesión y ajusto el tratamiento según cómo responde tu cuerpo. El proceso es vivo y dinámico.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto">
+    <div class="contacto-left">
+      <div class="section-label reveal">Contacto</div>
+      <h2 class="section-title reveal reveal-delay-1">¿Listo para<br>dar el <em>primer paso?</em></h2>
+      <p class="section-intro reveal reveal-delay-2">
+        No hace falta que sepas exactamente qué técnica necesitás. Contame cómo te sentís y juntos encontramos el mejor camino.
+      </p>
+      <div class="contacto-info reveal reveal-delay-3">
+        <div class="contacto-item">
+          <div class="contacto-item-icon">📍</div>
+          <div><strong>[Dirección del consultorio]</strong><br>[Ciudad, Provincia]</div>
+        </div>
+        <div class="contacto-item">
+          <div class="contacto-item-icon">📞</div>
+          <div>[Teléfono / WhatsApp]</div>
+        </div>
+        <div class="contacto-item">
+          <div class="contacto-item-icon">🕐</div>
+          <div>Lunes a Viernes: [Horarios]<br>Sábados: [Horarios]</div>
+        </div>
+        <div class="contacto-item">
+          <div class="contacto-item-icon">✉️</div>
+          <div>[Email de contacto]</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal reveal-delay-2">
+      <div id="contact-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" placeholder="Tu nombre" id="f-nombre" />
+          </div>
+          <div class="form-group">
+            <label>Apellido</label>
+            <input type="text" placeholder="Tu apellido" id="f-apellido" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="tu@email.com" id="f-email" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono (opcional)</label>
+          <input type="tel" placeholder="+54 9 ..." id="f-tel" />
+        </div>
+        <div class="form-group">
+          <label>Terapia de interés</label>
+          <select id="f-terapia">
+            <option value="">Seleccioná una terapia</option>
+            <option>Acupuntura</option>
+            <option>Moxibustión</option>
+            <option>Masaje Tuina</option>
+            <option>Ventosas</option>
+            <option>Auriculoterapia</option>
+            <option>No lo sé aún / Primera consulta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>¿Cómo te sentís? Contame brevemente</label>
+          <textarea id="f-mensaje" placeholder="Describí tus síntomas o lo que te preocupa..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="handleSubmit()" style="width:100%;justify-content:center;cursor:pointer;border:none;">
+          Enviar consulta
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="form-success" id="form-success">
+        <div class="success-icon">🌿</div>
+        <h3>¡Consulta recibida!</h3>
+        <p>Muchas gracias por escribirme. Me pondré en contacto con vos a la brevedad para coordinar tu primera sesión.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo"><span>✦</span> MTC Terapias — [Nombre]</div>
+    <div class="footer-text">© 2025 · Todos los derechos reservados</div>
+    <div class="footer-social">
+      <a href="#" title="Instagram">IG</a>
+      <a href="#" title="Facebook">FB</a>
+      <a href="#" title="WhatsApp">WA</a>
+    </div>
+  </footer>
+
+  <script>
+    // ── CURSOR ──────────────────────────────────────────────
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button, .terapia-card, .proceso-step').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+    });
+
+    // ── NAV SCROLL ──────────────────────────────────────────
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ── INTERSECTION OBSERVER (reveal) ──────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal, .stat').forEach(el => observer.observe(el));
+
+    // ── FORM ────────────────────────────────────────────────
+    function handleSubmit() {
+      const nombre  = document.getElementById('f-nombre').value.trim();
+      const email   = document.getElementById('f-email').value.trim();
+      const mensaje = document.getElementById('f-mensaje').value.trim();
+
+      if (!nombre || !email || !mensaje) {
+        alert('Por favor completá al menos tu nombre, email y mensaje.');
+        return;
+      }
+      document.getElementById('contact-form').style.display = 'none';
+      const success = document.getElementById('form-success');
+      success.style.display = 'block';
+      success.style.animation = 'fadeIn .5s ease';
+    }
+
+    // ── SMOOTH ACTIVE NAV ───────────────────────────────────
+    const sections = document.querySelectorAll('section[id], div[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current ? 'var(--terra)' : '';
+      });
+    });
+  </script>
+</body>
+</html>
